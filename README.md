@@ -1,9 +1,3 @@
-
-Conversation with Gemini
-Create a content of readme file for this workflow
-
-Here is a clean, professional, and scannable README.md template tailored specifically to your n8n AI Resume Screening Agent workflow. You can copy and paste this directly into your GitHub repository or project documentation.
-
 AI Resume Screening Agent
 An automated, agentic workflow built in n8n that streamlines the recruitment process. The system captures application data, securely manages files via Google Drive, extracts and processes resume details using an AI Agent powered by Google Gemini, and automatically handles candidate communication and data tracking.
 
