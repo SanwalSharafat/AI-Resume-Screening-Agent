@@ -1,0 +1,456 @@
+{
+  "name": "AI Resume Screening Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b7a64900-d487-451f-bd1f-18a57589e766",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        96,
+        0
+      ],
+      "id": "ec6bd2c6-3694-49c4-ae70-e29f8c30c13f",
+      "name": "Application data",
+      "webhookId": "b7a64900-d487-451f-bd1f-18a57589e766"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "resume",
+        "name": "={{ $json.body.name }} Resume Test",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        304,
+        0
+      ],
+      "id": "9d3e1ecc-37ec-4088-8177-c006253376b5",
+      "name": "Upload Resume",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        512,
+        0
+      ],
+      "id": "48a7e092-ed24-4cb1-a18a-15872a5687f4",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        0
+      ],
+      "id": "dcf857b6-4850-4146-8658-6c6f76c3ac61",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1WQMCaVGo7oxANLRCJWtJrqcb93lh80iw",
+          "mode": "list",
+          "cachedResultName": "n8n_automation_job_requirements.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1WQMCaVGo7oxANLRCJWtJrqcb93lh80iw/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        928,
+        0
+      ],
+      "id": "3226fa6e-f112-4cf0-82e3-2ce5a6af18fb",
+      "name": "Initial Job",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Candidate Resume:  {{ $('Extract from File').item.json.text }}\n\nJob Requirements: {{ $json.text }}",
+        "options": {
+          "systemMessage": "=Overview\nYou are an expert technical recruiter specializing in AI, automation, and software roles. You have been given a job description and a candidate resume. Your task is to analyze the resume against the job description and provide a detailed screening report.\nFocus specifically on how well the candidate matches the core requirements and ideal profile outlined in the job description. Evaluate both technical skill alignment and business-context understanding. Use reasoning grounded in the actual content of the resume and job post — avoid making assumptions.\nOutput\nYour output should follow this exact format:\nCandidate Strengths:\n\nList the top strengths or relevant qualifications the candidate brings to the table. Be specific.\nCandidate Weaknesses:\n\nList areas where the candidate is lacking or mismatched based on the job description.\nRisk Factor:\n\nAssign a risk score (Low / Medium / High)\nExplain the worst-case scenario if this candidate is hired.\n\nReward Factor:\n\nAssign a reward score (Low / Medium / High)\nDescribe the best-case scenario — what value could this candidate unlock?\nDoes the candidate appear to be a short-term or long-term fit?\n\nOverall Fit Rating (0-10):\n\nAssign a number between 0 (terrible match) and 10 (perfect match). Do not give decimals.\nJustification for Rating:\n\nExplain clearly why this candidate received that score. Reference specific resume content and how it aligns or doesn't with the job description.\nJob Description\n{{ $json.text }}\n\nIMPORTANT: Return ONLY a raw JSON object with EXACTLY these keys, no others:\n{\n  \"candidate_strengths\": [],\n  \"candidate_weaknesses\": [],\n  \"risk_factor\": {\n    \"score\": \"Low | Medium | High\",\n    \"explanation\": \"\"\n  },\n  \"reward_factor\": {\n    \"score\": \"Low | Medium | High\",\n    \"explanation\": \"\"\n  },\n  \"overall_fit_rating\": 0,\n  \"justification_for_rating\": \"\"\n}\nDo not rename keys. Do not add new keys. Do not wrap in markdown.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        176,
+        224
+      ],
+      "id": "4f81f7ff-54ef-40fa-9a28-10d2003002a3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        1136,
+        0
+      ],
+      "id": "b13619ed-300c-40e7-bb8a-9f28d7eb34fc",
+      "name": "Extract File"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        352
+      ],
+      "id": "7a0a88a6-7b75-4661-8db2-b073cd7cdac5",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let text = $input.first().json.output;\ntext = text.replace(/```json/g, \"\").replace(/```/g, \"\").trim();\n\nconst parsed = JSON.parse(text);\n\n// Enforce correct structure\nconst result = {\n  candidate_strengths: parsed.candidate_strengths || [],\n  candidate_weaknesses: parsed.candidate_weaknesses || [],\n  risk_factor: {\n    score: parsed.risk_factor?.score || \"\",\n    explanation: parsed.risk_factor?.explanation || \"\"\n  },\n  reward_factor: {\n    score: parsed.reward_factor?.score || \"\",\n    explanation: parsed.reward_factor?.explanation || \"\"\n  },\n  overall_fit_rating: parsed.overall_fit_rating || 0,\n  justification_for_rating: parsed.justification_for_rating || \"\"\n};\n\nreturn [{ json: result }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        224
+      ],
+      "id": "6457ddde-4b3b-4cbd-9506-d9c638d32f2e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Application data').item.json.body.email }}",
+        "subject": "Thanks for Application",
+        "emailType": "text",
+        "message": "=Dear  {{ $('Application data').item.json.body.name }},\n\nThanks for applying! we received your application and our team will review it shortly.\n\nWe will get back soon with the next step.\n\nBest Regard,\nSanwal Sharafat",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        224
+      ],
+      "id": "a8ac9016-5a3f-461a-920b-b3f0ab7e9f97",
+      "name": "Send a message",
+      "webhookId": "44913602-8618-4f61-a6bb-53e37f27de69",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -32
+      ],
+      "id": "e6ef5214-f832-4695-829d-5e28d7b7b06d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 192,
+        "width": 1072,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -32
+      ],
+      "id": "19e67014-b0b6-4111-b80e-991d73793c3e",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 272,
+        "width": 656,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        16,
+        208
+      ],
+      "id": "e7b107bb-7f23-4e55-afd7-4f00ea08a8a2",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 208,
+        "width": 448,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        688,
+        208
+      ],
+      "id": "4b46a6eb-300a-4e24-b2b7-75890eb9fc3a",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "tableId": "Resume Screening Database",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Application data').item.json.body.name }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $('Application data').item.json.body.email }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $('Application data').item.json.body.phone }}"
+            },
+            {
+              "fieldId": "candidate strength",
+              "fieldValue": "={{ $('Code in JavaScript').item.json.candidate_strengths }}"
+            },
+            {
+              "fieldId": "candidate weekness",
+              "fieldValue": "={{ $('Code in JavaScript').item.json.candidate_weaknesses }}"
+            },
+            {
+              "fieldId": "overall rating",
+              "fieldValue": "={{ $('Code in JavaScript').item.json.overall_fit_rating }}"
+            },
+            {
+              "fieldId": "rating justification",
+              "fieldValue": "={{ $('Code in JavaScript').item.json.justification_for_rating }}"
+            },
+            {
+              "fieldId": "risk factor",
+              "fieldValue": "={{ $('Code in JavaScript').item.json.risk_factor }}"
+            },
+            {
+              "fieldId": "reward factor",
+              "fieldValue": "={{ $('Code in JavaScript').item.json.reward_factor }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        944,
+        224
+      ],
+      "id": "c762404c-5864-424c-8ea1-bfde59873e53",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Application data": {
+      "main": [
+        [
+          {
+            "node": "Upload Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Resume": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Initial Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initial Job": {
+      "main": [
+        [
+          {
+            "node": "Extract File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8fb14e24-1906-4bc4-9d0a-121cd52f75c6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4983183c62a2e14805346f6768d54a9a6989b33cdd83337a479adde256c7af0a"
+  },
+  "nodeGroups": [],
+  "id": "a8E689aNtbBTO1UK",
+  "tags": []
+}
